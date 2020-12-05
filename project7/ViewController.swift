@@ -30,18 +30,22 @@ class ViewController: UITableViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "credits", style: .plain, target: self, action: #selector(creditsTapped))
         
         
-
-        if let url = URL(string: urlString) {
-            if let data = try? Data(contentsOf: url){
-                //we're OK to parse
-                parse(json: data)
-                
+        DispatchQueue.global(qos: .userInitiated).async {
+            [weak self] in
+            
+            if let url = URL(string: urlString) {
+                if let data = try? Data(contentsOf: url){
+                    //we're OK to parse
+                    self?.parse(json: data)
+                    
+                }else {
+                    self?.showError()
+                }
             }else {
-                showError()
+                self?.showError()
             }
-        }else {
-            showError()
         }
+        
     }
     
     @objc func searchTapped() {
@@ -72,9 +76,13 @@ class ViewController: UITableViewController {
     }
     
     func showError() {
-        let ac = UIAlertController(title: "Loading error", message: "There was a problem loading the feed; please check your connection and try again.", preferredStyle: .alert)
-        ac.addAction(UIAlertAction(title: "OK", style: .default))
-        present(ac, animated: true)
+        DispatchQueue.main.async {
+            [weak self] in
+            let ac = UIAlertController(title: "Loading error", message: "There was a problem loading the feed; please check your connection and try again.", preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "OK", style: .default))
+            self?.present(ac, animated: true)
+        }
+        
     }
     
     func parse(json: Data) {
@@ -82,7 +90,10 @@ class ViewController: UITableViewController {
         
         if let jsonpetitions = try? decoder.decode(Petitions.self, from: json){
             petitions = jsonpetitions.results
-            tableView.reloadData()
+            DispatchQueue.main.async { [weak self] in
+                self?.tableView.reloadData()
+
+            }
         }
         
     }
