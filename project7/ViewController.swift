@@ -55,14 +55,19 @@ class ViewController: UITableViewController {
         let action = UIAlertAction(title: "Search", style: .default){
             [weak self, weak ac]  _ in
             if let text = ac?.textFields?[0].text {
-                for i in 0..<(self?.petitions.count)!{
-                    if (self?.petitions[i].title.lowercased().contains(text.lowercased()))! {
-                        self?.filteredPetitions.append((self?.petitions[i])!)
-                    }else { continue }
+                DispatchQueue.global(qos: .userInteractive).async {
+                    for i in 0..<(self?.petitions.count)!{
+                        if (self?.petitions[i].title.lowercased().contains(text.lowercased()))! {
+                            self?.filteredPetitions.append((self?.petitions[i])!)
+                        }else { continue }
+                    }
+                    DispatchQueue.main.async {
+                        self?.tableView.reloadData()
+                    }
+                    
                 }
-                self?.tableView.reloadData()
-                
             }
+            
         }
         ac.addAction(action)
         present(ac,animated: true)
